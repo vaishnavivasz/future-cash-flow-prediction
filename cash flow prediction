@@ -1,0 +1,52 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from statsmodels.tsa.arima.model import ARIMA
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+import pickle
+# 1. Load the Dataset# Assuming 'historical_financial_data.csv' contains a 'Date' and 'CashFlow' column
+data = pd.read_csv('annual.csv')#, parse_dates=['2'], index_col='2')# Check the data
+print(data.head())# Plot the historical cash flow data
+data['12/31/2018'].plot(figsize=(10, 6))
+plt.title('Historical Cash Flow')
+plt.show()
+# 2. Split the Data into Training and Testing Sets# Train-test split (e.g., 80% for training, 20% for testing)
+train_size = int(len(data) * 0.8)
+train, test = data[:train_size], data[train_size:]# Check the split
+print(f'Training data shape: {train.shape}')
+print(f'Testing data shape: {test.shape}')
+# 3. Train the ARIMA Model# Define and train the ARIMA model
+model = ARIMA(train['12/31/2018'], order=(5, 1, 0))  # Adjust the order (p,d,q) as needed
+model_fit = model.fit()# Summary of the model
+print(model_fit.summary())# 4. Make Predictions# Forecast the future cash flow for the test period
+predictions = model_fit.forecast(steps=len(test))# Convert predictions to a DataFrame
+predictions = pd.DataFrame(predictions, index=test.index, columns=['Predicted_CashFlow'])# Plot the actual vs predicted cash flow
+plt.figure(figsize=(10, 6))
+plt.plot(train.index, train['12/31/2018'], label='Training Data')
+plt.plot(test.index, test['12/31/2018'], label='Actual Cash Flow')
+plt.plot(predictions.index, predictions['Predicted_CashFlow'], label='Predicted Cash Flow', color='red')
+plt.title('Cash Flow Prediction')
+plt.legend()
+plt.show()
+
+# 5. Evaluate the Model
+# Calculate performance metrics
+#mae = mean_absolute_error(test['12/31/2018'], predictions['prediction_Cashflow'])
+#rmse = np.sqrt(mean_squared_error(test['CashFlow'], predictions['Predicted_CashFlow']))
+
+#print(f'Mean Absolute Error (MAE): {mae}')
+#print(f'Root Mean Squared Error (RMSE): {rmse}')
+
+# 6. Save the Model (Optional)
+# Save the model to a file
+#with open('cashflow_model.pkl', 'wb') as f:
+ #   pickle.dump(model_fit, f)
+
+# 7. Load and Use the Model (Optional)
+# Load the model
+#with open('cashflow_model.pkl', 'rb') as f:
+  #  loaded_model = pickle.load(f)
+
+# Use the loaded model for future predictions
+#future_predictions = loaded_model.forecast(steps=12)  # Predict the next 12 periods
+#print(future_predictions)
